@@ -96,9 +96,9 @@ def main():
     global output_file
     input_file = input('input a path to the pdf file you want to tag: ')
     output_file = input('input an output path to put results of the tagging: ')
-    get_pdf_text(input_file)
-    run_gpt_model(text_content)
-    write_file(instances, output_file)
+    text_content = get_pdf_text(input_file)
+    instances = run_gpt_model(text_content)
+    output_pdf_written = write_file(instances, output_file)
 
 
 main()
