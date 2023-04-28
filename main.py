@@ -4,6 +4,8 @@ import pypandoc
 import PyPDF2
 from PyPDF2 import PdfReader
 from PyPDF2 import PdfFileReader, PdfFileWriter
+import io   
+
 
 def get_pdf_text(input_file):
     opened_file = open(input_file, 'rb')
@@ -65,7 +67,7 @@ def write_file(instances, input_file, output_file):
     
     # Get the existing metadata from the PdfFileReader object
         metadata = reader.getDocumentInfo()
-        print(metadata)
+    
     # Create a PdfFileWriter object to write the modified PDF file
         writer = PdfFileWriter()
     
@@ -82,10 +84,15 @@ def write_file(instances, input_file, output_file):
             '/Keywords': ', '.join(instances),
         })
     
-        # Define the output PDF file
-        with open(output_file, 'wb') as out_file:
+# Define the output PDF file
+        output_data = io.BytesIO()
+
         # Write the contents of the PdfFileWriter object to the output PDF file
-            writer.write(out_file)
+        writer.write(output_data)
+
+        # Write output_data to output_file
+        with open(output_file, 'wb') as out_file:
+            out_file.write(output_data.getbuffer())
 
 def run_pdf_loop(input_path, output_path):
     """Extract keywords from a directory of PDF files using GPT
