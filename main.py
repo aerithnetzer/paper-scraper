@@ -11,7 +11,7 @@ def get_pdf_text(input_file):
 # Open the PDF file in read-binary mode
     with opened_file as pdf_file:
     # Create a PyPDF2 PdfFileReader object from the PDF file
-        pdf_reader = PyPDF2.PdfFileReader(pdf_file)
+        pdf_reader = PyPDF2.PdfFileReader(pdf_file, strict=False)
 
         # Initialize an empty string to store the text content
         text_content = ""
@@ -65,7 +65,7 @@ def write_file(instances, input_file, output_file):
     
     # Get the existing metadata from the PdfFileReader object
         metadata = reader.getDocumentInfo()
-    
+        print(metadata)
     # Create a PdfFileWriter object to write the modified PDF file
         writer = PdfFileWriter()
     
