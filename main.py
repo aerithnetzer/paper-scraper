@@ -39,7 +39,7 @@ def run_gpt_model(text_content):
     )
     #print(completion)
     outputs = completion['choices'][0]['message']['content']
-    print(outputs)
+    # print(outputs)
     # Split the input string into lines
     lines = outputs.splitlines()
 
@@ -87,12 +87,13 @@ def write_file(instances, input_file, output_file):
         # Write the contents of the PdfFileWriter object to the output PDF file
             writer.write(out_file)
 
-def run_pdf_loop(input_path, output_path):
+def run_pdf_loop(input_path, output_path, markdown_path):
     """Extract keywords from a directory of PDF files using GPT
 
     Args:
         input_path (str): path to directory of input files
         output_path (str): desired path to directory of output files
+        markdown_paht (str): path to directory of markdown files
     """    
 
     # Loop through all the files in the "input_path" directory using the os.listdir() method
@@ -114,10 +115,18 @@ def run_pdf_loop(input_path, output_path):
             # Write the instances to the output file and also to the original input file using the "write_file" function
             write_file(instances, input_file, output_file)
 
+            # Find markdown documents with the same filenames (use citekeys!)
+            try:
+                with open(os.path.join(markdown_path,f"{filename[:-4]}.md"),'a') as f:
+                    print(f'\n{filename}: {instances}')
+                    f.write(", ".join([f"[[{''.join(filter(lambda x: x.isalnum() or x.isspace(), s.strip()))}]]" for s in instances[0].split(',')]))
+            except(FileNotFoundError):
+                print(f"Could not find corresponding markdown file for {filename[:-4]}.md")
 
 def main():  
     input_path = input('input a path to the pdf files you want to tag: ')
     output_path = input('input an output path to put results of the tagging: ')
-    run_pdf_loop(input_path, output_path)
+    markdown_path = input('input the path to markdown files: ')
+    run_pdf_loop(input_path, output_path, markdown_path)
 
 main()
