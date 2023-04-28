@@ -5,7 +5,6 @@ import PyPDF2
 from PyPDF2 import PdfReader
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
-
 def get_pdf_text(input_file):
     opened_file = open(input_file, 'rb')
 
@@ -15,7 +14,6 @@ def get_pdf_text(input_file):
         pdf_reader = PyPDF2.PdfFileReader(pdf_file)
 
         # Initialize an empty string to store the text content
-        global text_content
         text_content = ""
 
     # Loop through each page of the PDF file
@@ -46,7 +44,6 @@ def run_gpt_model(text_content):
     lines = outputs.splitlines()
 
 # Initialize an empty list to store the instances
-    global instances
     instances = []
 
 # Loop through each line of the input string
@@ -60,7 +57,7 @@ def run_gpt_model(text_content):
 # Return the list of instances
     return instances
 
-def write_file(instances, output_file):
+def write_file(instances, input_file, output_file):
     # Open the input PDF file
     with open(input_file, 'rb') as f:
     # Create a PdfFileReader object to read the contents of the PDF file
@@ -81,7 +78,6 @@ def write_file(instances, output_file):
             writer.addPage(page)
     
     # Add your custom metadata properties here:
-        instances
         writer.addMetadata({
             '/Keywords': ', '.join(instances),
         })
@@ -91,14 +87,37 @@ def write_file(instances, output_file):
         # Write the contents of the PdfFileWriter object to the output PDF file
             writer.write(out_file)
 
-def main():
-    global input_file
-    global output_file
-    input_file = input('input a path to the pdf file you want to tag: ')
-    output_file = input('input an output path to put results of the tagging: ')
-    text_content = get_pdf_text(input_file)
-    instances = run_gpt_model(text_content)
-    output_pdf_written = write_file(instances, output_file)
+def run_pdf_loop(input_path, output_path):
+    """Extract keywords from a directory of PDF files using GPT
 
+    Args:
+        input_path (str): path to directory of input files
+        output_path (str): desired path to directory of output files
+    """    
+
+    # Loop through all the files in the "input_path" directory using the os.listdir() method
+    for filename in os.listdir(input_path):
+        # Check if each file ends with ".pdf"
+        if filename.endswith('.pdf'):
+            # If it does, set "input_file" as the full path of the current PDF file in the loop
+            input_file = os.path.join(input_path, filename)
+            
+            # Set "output_file" as the full path of where the extracted data from the current PDF file will be saved
+            output_file = os.path.join(output_path, filename)
+
+            # Get the text content of the current PDF file using the "get_pdf_text" function 
+            text_content = get_pdf_text(input_file)
+            
+            # Run the GPT model on the text content to generate instances 
+            instances = run_gpt_model(text_content)
+            
+            # Write the instances to the output file and also to the original input file using the "write_file" function
+            write_file(instances, input_file, output_file)
+
+
+def main():  
+    input_path = input('input a path to the pdf files you want to tag: ')
+    output_path = input('input an output path to put results of the tagging: ')
+    run_pdf_loop(input_path, output_path)
 
 main()
