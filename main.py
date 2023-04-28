@@ -6,7 +6,7 @@ from PyPDF2 import PdfReader
 from PyPDF2 import PdfFileReader, PdfFileWriter
 
 
-def get_pdf_text():
+def get_pdf_text(input_file):
     opened_file = open(input_file, 'rb')
 
 # Open the PDF file in read-binary mode
@@ -30,10 +30,9 @@ def get_pdf_text():
             text_content += page_text
 
     # Print the final text content string
-    print(text_content)
-    run_gpt_model()
+    return text_content
 
-def run_gpt_model():
+def run_gpt_model(text_content):
     openai.api_key = os.environ["OPENAI_API_KEY"]
     completion = openai.ChatCompletion.create(
     model="gpt-3.5-turbo", 
@@ -58,11 +57,10 @@ def run_gpt_model():
     # Append the instance to the list of instances
         instances.append(instance)
 
-# Print the list of instances
-    print(instances)
-    write_file()
+# Return the list of instances
+    return instances
 
-def write_file():
+def write_file(instances, output_file):
     # Open the input PDF file
     with open(input_file, 'rb') as f:
     # Create a PdfFileReader object to read the contents of the PDF file
@@ -98,6 +96,9 @@ def main():
     global output_file
     input_file = input('input a path to the pdf file you want to tag: ')
     output_file = input('input an output path to put results of the tagging: ')
-    get_pdf_text()
+    get_pdf_text(input_file)
+    run_gpt_model(text_content)
+    write_file(instances, output_file)
+
 
 main()
