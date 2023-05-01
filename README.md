@@ -1,7 +1,7 @@
 # paper-scraper
 ## What this code currently does
 
-This project currently inputs the first five pages of a PDF, runs the text through the GPT-3.5-Turbo, and then returns a PDF with metadata tagged in the 'Keywords' field.
+This project currently inputs the first page page of a PDF, runs the text through the GPT-3.5-Turbo, and then returns a PDF with metadata tagged in the 'Keywords' field.
 
 ## How to use this code
 
