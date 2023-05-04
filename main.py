@@ -5,6 +5,8 @@ import PyPDF2
 from PyPDF2 import PdfReader
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import io   
+import pypandoc
+
 
 
 def get_pdf_text(input_file):
@@ -18,8 +20,8 @@ def get_pdf_text(input_file):
         # Initialize an empty string to store the text content
         text_content = ""
 
-    # Loop through each page of the PDF file
-        for page_num in range(1): # range(pdf_reader.getNumPages()):
+    # Loop through first 3 pages of the PDF file
+        for page_num in range(3):
         # Get the current page object
             page_obj = pdf_reader.getPage(page_num)
 
@@ -31,6 +33,32 @@ def get_pdf_text(input_file):
 
     # Print the final text content string
     return text_content
+
+
+def pdf_to_markdown(input_file):
+    """ Convert content of pdf to markdown file
+    
+    Args: input_file: the file that you would like to convert to markdown
+
+    """
+    output = pypandoc.convert_file(input_file, 'markdown')
+    return output
+
+def attach_keywords_to_markdown(input_file, instances):
+    
+    for i in range(len(instances)):
+        instances[i] = '#' + instances[i]
+
+    # Read the input markdown file
+    with open(input_file, 'r') as f:
+        md_content = f.read()
+
+    # Add the keywords at the beginning of the document
+    for instance in reversed(instances):
+        md_content = f'{instance} {md_content}'
+
+    # Return the modified markdown content
+    return md_content
 
 def run_gpt_model(text_content):
     openai.api_key = os.environ["OPENAI_API_KEY"]
@@ -118,7 +146,13 @@ def run_pdf_loop(input_path, output_path, markdown_path):
             
             # Run the GPT model on the text content to generate instances 
             instances = run_gpt_model(text_content)
+
+            md_content = pdf_to_markdown(input)
             
+            tagged_md_content = attach_keywords_to_markdown(md_content)
+
+            
+
             # Write the instances to the output file and also to the original input file using the "write_file" function
             write_file(instances, input_file, output_file)
 
