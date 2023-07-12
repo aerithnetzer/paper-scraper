@@ -5,7 +5,6 @@ import PyPDF2
 from PyPDF2 import PdfReader
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import io   
-import pypandoc
 
 
 
@@ -36,13 +35,15 @@ def get_pdf_text(input_file):
 
 
 def pdf_to_markdown(input_file):
-    """ Convert content of pdf to markdown file
-    
-    Args: input_file: the file that you would like to convert to markdown
+  
+    with open(input_file, 'rb') as f:
+        pdf = PyPDF2.PdfFileReader(f)
+        content = ''
+        for i in range(pdf.getNumPages()):
+            content += pdf.getPage(i).extractText() + '\n'
 
-    """
-    output = pypandoc.convert_file(input_file, 'markdown')
-    return output
+    markdown_content = pypandoc.convert_text(content, 'md', format='pdf')
+    return markdown_content
 
 def attach_keywords_to_markdown(input_file, instances):
     
@@ -87,7 +88,19 @@ def run_gpt_model(text_content):
 # Return the list of instances
     return instances
 
-def write_file(instances, input_file, output_file):
+
+def write_markdown(tagged_md_content, markdown_output_path):
+    # Convert the Markdown content to HTML
+    html_content = pypandoc.convert_text(tagged_md_content, 'html', format='md')
+
+    # Create the output directory if it doesn't exist
+    os.makedirs(markdown_output_path, exist_ok=True)
+
+    # Write the HTML content to a file in the output directory
+    with open(os.path.join(markdown_output_path, 'output.html'), 'w') as f:
+        f.write(html_content)
+
+def write_pdf_file(instances, input_file, output_file):
     # Open the input PDF file
     with open(input_file, 'rb') as f:
     # Create a PdfFileReader object to read the contents of the PDF file
@@ -122,7 +135,10 @@ def write_file(instances, input_file, output_file):
         with open(output_file, 'wb') as out_file:
             out_file.write(output_data.getbuffer())
 
-def run_pdf_loop(input_path, output_path, markdown_path):
+
+
+
+def run_pdf_loop(input_path, output_path, markdown_path, markdown_output_path):
     """Extract keywords from a directory of PDF files using GPT
 
     Args:
@@ -147,14 +163,16 @@ def run_pdf_loop(input_path, output_path, markdown_path):
             # Run the GPT model on the text content to generate instances 
             instances = run_gpt_model(text_content)
 
-            md_content = pdf_to_markdown(input)
+            md_content = pdf_to_markdown(text_content)
             
             tagged_md_content = attach_keywords_to_markdown(md_content)
 
-            
+            write_markdown(tagged_md_content, markdown_output_path)
+
+
 
             # Write the instances to the output file and also to the original input file using the "write_file" function
-            write_file(instances, input_file, output_file)
+            write_pdf_file(instances, input_file, output_file)
 
             # Find markdown documents with the same filenames (use citekeys!)
             try:
@@ -168,6 +186,7 @@ def main():
     input_path = input('input a path to the pdf files you want to tag: ')
     output_path = input('input an output path to put results of the tagging: ')
     markdown_path = input('input the path to markdown files: ')
-    run_pdf_loop(input_path, output_path, markdown_path)
+    markdown_output_path = input('input the path to a folder in which you want the markdown files to be written (this is your foam/obsidian journal folder): ')
+    run_pdf_loop(input_path, output_path, markdown_path, markdown_output_path)
 
 main()
