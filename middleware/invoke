@@ -1,0 +1,9 @@
+#!/bin/sh
+
+#
+#
+/usr/bin/invoke_app "$@" -t paperscraper \
+                         -C "start_jupyter -t -T @tool workflow.ipynb" \
+                         -u anaconda-7 \
+                         -w headless \
+                         -r none
